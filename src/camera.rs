@@ -1,5 +1,4 @@
-use bevy::{prelude::*, render::camera::RenderTarget};
-use bevy_inspector_egui::Inspectable;
+use bevy::{prelude::*, window::*};
 
 #[derive(Debug, Reflect, Resource)]
 pub struct CameraSettings {
@@ -25,7 +24,7 @@ pub struct WorldCursor {
     pub position: Vec2,
 }
 
-#[derive(Debug, Reflect, Component, Inspectable)]
+#[derive(Debug, Reflect, Component)]
 pub struct ControlledCamera {
     pub movement_speed: f32,
 }
@@ -77,18 +76,13 @@ fn camera_movement(
 
 fn world_cursor_tracker(
     mut cursor: ResMut<WorldCursor>,
-    windows: Res<Windows>,
+    primary_query: Query<&Window, With<PrimaryWindow>>,
     query: Query<(&Camera, &GlobalTransform), With<ControlledCamera>>,
 ) {
     let (camera, camera_transform) = query.single();
-    let window = if let RenderTarget::Window(id) = camera.target {
-        windows.get(id).unwrap()
-    } else {
-        windows.get_primary().unwrap()
-    };
-
-    if let Some(screen_pos) = window.cursor_position() {
-        let window_size = Vec2::new(window.width() as f32, window.height() as f32);
+    let primary = primary_query.single();
+    if let Some(screen_pos) = primary.cursor_position() {
+        let window_size = Vec2::new(primary.width() as f32, primary.height() as f32);
         let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
         let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix().inverse();
         let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));

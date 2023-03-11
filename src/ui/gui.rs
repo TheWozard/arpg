@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
 use rand::prelude::*;
 
-use super::resources::{UIState, UISettings};
+use crate::resources::{UIState, UISettings};
 
 fn ui_controls(
     mut state: ResMut<UIState>,
