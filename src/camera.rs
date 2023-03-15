@@ -1,6 +1,8 @@
 use bevy::{prelude::*, window::*};
+use bevy_inspector_egui::prelude::*;
 
-#[derive(Debug, Reflect, Resource)]
+#[derive(Reflect, Resource, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct CameraSettings {
     pub move_camera_forward: KeyCode,
     pub move_camera_left: KeyCode,
@@ -19,12 +21,14 @@ impl Default for CameraSettings {
     }
 }
 
-#[derive(Debug, Reflect, Resource, Default)]
+#[derive(Reflect, Resource, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
 pub struct WorldCursor {
     pub position: Vec2,
 }
 
-#[derive(Debug, Reflect, Component)]
+#[derive(Reflect, Component, InspectorOptions)]
+#[reflect(Component, InspectorOptions)]
 pub struct ControlledCamera {
     pub movement_speed: f32,
 }
@@ -101,6 +105,9 @@ impl Plugin for CameraPlugin {
             .insert_resource(WorldCursor::default())
             .add_startup_system(spawn_camera)
             .add_system(camera_movement)
-            .add_system(world_cursor_tracker);
+            .add_system(world_cursor_tracker)
+            .register_type::<WorldCursor>()
+            .register_type::<CameraSettings>()
+            .register_type::<ControlledCamera>();
     }
 }

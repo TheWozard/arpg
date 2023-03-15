@@ -8,10 +8,10 @@ pub const HEIGHT: f32 = 600.;
 mod resources;
 mod actors;
 mod camera;
-// mod debug;
+mod dragndrop;
+mod debug;
 // mod ui;
 
-// use debug::DebugPlugin;
 // use ui::gui::*;
 
 fn main() {
@@ -36,11 +36,12 @@ fn main() {
         .add_startup_system(actors::player::spawn_player)
         .add_startup_system(actors::boxes::spawn_boxes)
         .add_system(quick_close)
+        .add_plugin(dragndrop::DragNDrop)
         // .add_startup_system(setup)
         // .add_system(button_system)
         .add_plugin(camera::CameraPlugin)
         // .add_plugin(GuiPlugin)
-        // .add_plugin(DebugPlugin::default())
+        .add_plugin(debug::DebugPlugin::default())
         .run();
 }
 
@@ -50,6 +51,7 @@ fn quick_close(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode
         exit.send(AppExit)
     }
 }
+
 
 // const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
 // const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);

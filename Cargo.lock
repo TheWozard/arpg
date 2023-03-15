@@ -220,6 +220,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_egui",
+ "egui",
  "rand",
 ]
 
