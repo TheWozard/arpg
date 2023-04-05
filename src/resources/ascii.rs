@@ -14,6 +14,9 @@ macro_rules! sheet_index {
 }
 
 pub const ASCII_SCALE: Vec3 = Vec3::splat(6.0);
+pub const TILE_SIZE: Vec2 = Vec2::splat(9.0);
+pub const TILE_TRUE_SCALE: Vec2 =
+    Vec2::new(ASCII_SCALE.x * TILE_SIZE.x, ASCII_SCALE.y * TILE_SIZE.y);
 pub enum AsciiIndex {
     QuarterSquare = sheet_index!(11, 0),
     HalfSquare = sheet_index!(11, 1),
@@ -35,14 +38,7 @@ pub fn load_ascii(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let image = assets.load("Ascii.png");
-    let atlas = TextureAtlas::from_grid(
-        image,
-        Vec2::splat(9.0),
-        16,
-        16,
-        Some(Vec2::splat(2.0)),
-        None,
-    );
+    let atlas = TextureAtlas::from_grid(image, TILE_SIZE, 16, 16, Some(Vec2::splat(2.0)), None);
 
     commands.insert_resource(AsciiSheet(texture_atlases.add(atlas)));
 }
