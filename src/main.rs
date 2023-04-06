@@ -30,6 +30,7 @@ fn main() {
                         title: "Mapping".to_string(),
                         resolution: WindowResolution::new(HEIGHT * RATIO, HEIGHT),
                         present_mode: PresentMode::AutoVsync,
+                        canvas: Some("#bevy".to_owned()),
                         ..default()
                     }),
                     ..default()

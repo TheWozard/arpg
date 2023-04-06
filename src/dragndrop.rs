@@ -1,9 +1,8 @@
 use crate::camera::WorldCursor;
 use bevy::prelude::*;
-use bevy_inspector_egui::prelude::*;
 
-#[derive(Reflect, Component, Default, InspectorOptions)]
-#[reflect(Component, InspectorOptions)]
+#[derive(Reflect, Component, Default)]
+#[reflect(Component)]
 pub struct Draggable {
     active: bool,
     // offset: Vec2,
