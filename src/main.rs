@@ -4,6 +4,7 @@ use bevy_embedded_assets::EmbeddedAssetPlugin;
 
 mod actors;
 mod camera;
+mod debug;
 mod dragndrop;
 mod grid;
 mod resources;
@@ -12,8 +13,8 @@ pub const RATIO: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 600.;
 
 fn main() {
-    App::new()
-        .insert_resource(ClearColor(resources::palette::BACKGROUND))
+    let mut app = App::new();
+    app.insert_resource(ClearColor(resources::palette::BACKGROUND))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -38,8 +39,14 @@ fn main() {
         .add_system(quick_close)
         .add_plugin(dragndrop::DragNDrop)
         .add_plugin(camera::CameraPlugin)
-        .add_plugin(grid::GridPlugin)
-        .run();
+        .add_plugin(grid::GridPlugin);
+
+    #[cfg(all(not(target_arch = "wasm32"), debug_assertions))]
+    {
+        app.add_plugin(debug::DebugPlugin::default());
+    }
+
+    app.run();
 }
 
 fn quick_close(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {

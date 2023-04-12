@@ -89,8 +89,7 @@ fn world_cursor_tracker(
         let window_size = Vec2::new(primary.width() as f32, primary.height() as f32);
         let ndc = (screen_pos / window_size) * 2.0 - Vec2::ONE;
         let ndc_to_world = camera_transform.compute_matrix() * camera.projection_matrix().inverse();
-        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
-        let world_pos: Vec2 = world_pos.truncate();
+        let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0)).truncate();
 
         cursor.position = world_pos;
     }
