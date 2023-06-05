@@ -1,6 +1,9 @@
 use crate::resources::ascii;
 use bevy::prelude::*;
+use bevy::utils::HashSet;
+use bevy_inspector_egui::prelude::*;
 
+/// GridPlugin loads the Grid resource and adds systems responsible for maintaining the grid.
 pub struct GridPlugin;
 impl Plugin for GridPlugin {
     fn build(&self, app: &mut App) {
@@ -9,6 +12,7 @@ impl Plugin for GridPlugin {
     }
 }
 
+/// grid_position_forced moves anything with a Transform that has changed onto its grid based location.
 pub fn grid_position_forced(
     mut entities: Query<(&mut Transform, &mut GridTracked), Changed<Transform>>,
     grid: Res<Grid>,
@@ -25,6 +29,7 @@ pub fn grid_position_forced(
     }
 }
 
+/// GridTracked forces a Transform to align with the grid.
 #[derive(Component)]
 pub struct GridTracked {
     pub position: GridPosition,
@@ -38,7 +43,7 @@ impl Default for GridTracked {
     }
 }
 
-/// GridLocation an integer based vector for a pieces location on the grid.
+/// GridLocation an integer based vector for a entity location on the grid.
 /// This requires a Grid to translate back to world space as the grid size is not fixed.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Component)]
 pub struct GridPosition {
@@ -58,14 +63,16 @@ impl Default for GridPosition {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Reflect, Clone, Eq, PartialEq, Debug)]
 pub struct Tile {
-    ground_tile: Option<Entity>,
+    items: HashSet<Entity>,
 }
 
 impl Default for Tile {
     fn default() -> Self {
-        Tile { ground_tile: None }
+        Tile {
+            items: HashSet::new(),
+        }
     }
 }
 
@@ -117,6 +124,19 @@ impl Grid {
             position.x as f32 * self.scale.x,
             position.y as f32 * self.scale.y,
         )
+    }
+
+    /// adds an entity at a new position
+    pub fn add_entity(mut self, position: &GridPosition, entity: Entity) -> bool {
+        let index = self.get_index_of(position);
+        let tile = self.tiles.get_mut(index);
+        match tile {
+            Some(s) => {
+                s.items.insert(entity);
+                true
+            }
+            None => false,
+        }
     }
 
     /// Fakes the 2d position into the grid, this should be the only location that ever does this.

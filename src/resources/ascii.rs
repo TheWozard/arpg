@@ -2,11 +2,15 @@
 use bevy::prelude::*;
 
 #[derive(Resource)]
-pub struct AsciiSheet(pub Handle<TextureAtlas>);
+pub struct AsciiSheet {
+    pub atlas: Handle<TextureAtlas>,
+    pub image: Handle<Image>,
+}
 
 pub const ITEMS_PER_COLUMN: isize = 16;
+pub const TOTAL_COLUMNS: isize = 16;
 macro_rules! sheet_index {
-    // Converts a zero indexed x,y coordinate to a index on a sheet
+    // Converts a zero indexed x,y c oordinate to a index on a sheet
     // Currently limited to only the ascii sheet
     ($row:expr, $column:expr) => {
         ($row * ITEMS_PER_COLUMN) + $column
@@ -42,7 +46,17 @@ pub fn load_ascii(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let image = assets.load("Ascii.png");
-    let atlas = TextureAtlas::from_grid(image, TILE_SIZE, 16, 16, Some(Vec2::splat(2.0)), None);
+    let atlas = TextureAtlas::from_grid(
+        image.clone(),
+        TILE_SIZE,
+        TOTAL_COLUMNS as usize,
+        ITEMS_PER_COLUMN as usize,
+        Some(Vec2::splat(2.0)),
+        None,
+    );
 
-    commands.insert_resource(AsciiSheet(texture_atlases.add(atlas)));
+    commands.insert_resource(AsciiSheet {
+        atlas: texture_atlases.add(atlas),
+        image: image,
+    });
 }

@@ -15,3 +15,12 @@ pub const PLAYER: Color = color!(255., 236., 209.); // #FFECD1
 pub const ENEMY: Color = color!(120., 41., 15.); // #78290F
 
 // pub const ITEM: Color = color!(255., 125., 0.); // #FF7D00
+
+pub const TILE_COLORS: [Color; 3] = [PLAYER, ENEMY, MIDGROUND];
+
+// UI Components
+pub const MENU_BACKGROUND: Color = color!(21., 97., 109.); // #15616D
+pub const MENU_BUTTON_BACKGROUND: Color = color!(255., 236., 209.); // #FFECD1
+pub const MENU_BUTTON_HOVERED_BACKGROUND: Color = color!(255., 246., 217.);
+pub const MENU_BUTTON_CLICKED_BACKGROUND: Color = color!(120., 41., 15.); // #78290F
+pub const MENU_TEXT_COLOR: Color = color!(00., 21., 36.); // #001524

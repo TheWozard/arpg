@@ -2,13 +2,16 @@
 use bevy::prelude::*;
 
 pub mod ascii;
+pub mod fonts;
 pub mod palette;
+pub mod ui;
 
 /// ResourcePlugin handles loading and management of resources.
 pub struct ResourcePlugin;
 impl Plugin for ResourcePlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(ascii::load_ascii.in_base_set(StartupSet::PreStartup));
+        app.add_startup_system(fonts::load_fonts.in_base_set(StartupSet::PreStartup));
     }
 }
 
@@ -19,10 +22,12 @@ pub enum LayerOrder {
     PlayerLayer,
 }
 
-/// We will mostly be using LayerOrder as a part of Vec3 so being able to easily cast to f32 is important.
-#[allow(clippy::from_over_into)] // We cant create a From for f32.
-impl Into<f32> for LayerOrder {
-    fn into(self: Self) -> f32 {
-        (self as i16).into()
+impl LayerOrder {
+    pub fn index(&self) -> f32 {
+        match *self {
+            LayerOrder::BackgroundLayer => 0.,
+            LayerOrder::EnemyLayer => 100.,
+            LayerOrder::PlayerLayer => 200.,
+        }
     }
 }
