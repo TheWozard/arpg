@@ -1,16 +1,30 @@
 use crate::resources::palette;
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct InteractiveButton {
+#[derive(Component, Clone)]
+pub struct InteractiveBackgroundColor {
     pub default_color: Color,
     pub hovered_color: Color,
     pub clicked_color: Color,
 }
 
+impl Default for InteractiveBackgroundColor {
+    fn default() -> Self {
+        InteractiveBackgroundColor {
+            default_color: palette::MENU_BUTTON_BACKGROUND,
+            hovered_color: palette::MENU_BUTTON_HOVERED_BACKGROUND,
+            clicked_color: palette::MENU_BUTTON_CLICKED_BACKGROUND,
+        }
+    }
+}
+
 pub fn interact_with_interactive_buttons(
     mut query: Query<
-        (&Interaction, &mut BackgroundColor, &InteractiveButton),
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &InteractiveBackgroundColor,
+        ),
         Changed<Interaction>,
     >,
 ) {
@@ -34,19 +48,21 @@ pub fn interact_with_interactive_buttons(
 // and we are only trying to create optional params with defaults to the function.
 pub struct InteractiveTextButton {
     pub text: String,
-    pub text_color: Color,
-    pub color: Color,
-    pub font: Handle<Font>,
+    pub text_style: TextStyle,
+    pub color: InteractiveBackgroundColor,
     pub size: Size,
 }
 
 impl Default for InteractiveTextButton {
     fn default() -> Self {
         InteractiveTextButton {
-            text: "Placeholder".to_string(),
-            text_color: palette::MENU_TEXT_COLOR,
-            color: palette::MENU_BUTTON_BACKGROUND,
-            font: Handle::default(),
+            text: "Default".to_string(),
+            text_style: TextStyle {
+                font_size: 40.0,
+                color: palette::MENU_TEXT_COLOR,
+                ..default()
+            },
+            color: InteractiveBackgroundColor::default(),
             size: Size {
                 width: Val::Px(200.),
                 height: Val::Px(100.),
@@ -56,7 +72,7 @@ impl Default for InteractiveTextButton {
 }
 
 impl InteractiveTextButton {
-    pub fn build(&self, commands: &mut Commands) -> Entity {
+    pub fn initialize(&self, commands: &mut ChildBuilder, bundle: impl Bundle) -> Entity {
         commands
             .spawn((
                 ButtonBundle {
@@ -66,26 +82,40 @@ impl InteractiveTextButton {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: self.color.to_owned().into(),
+                    background_color: self.color.default_color.to_owned().into(),
                     ..default()
                 },
-                InteractiveButton {
-                    default_color: self.color.to_owned().into(),
-                    hovered_color: Color::RED.into(),
-                    clicked_color: Color::GREEN.into(),
-                },
+                self.color.to_owned(),
+                bundle,
             ))
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(
                     self.text.to_owned(),
-                    TextStyle {
-                        font_size: 40.0,
-                        font: self.font.to_owned(),
-                        color: self.text_color.to_owned(),
-                        ..default()
-                    },
+                    self.text_style.to_owned(),
                 ));
             })
             .id()
     }
+}
+
+#[macro_export]
+macro_rules! Clickable {
+    ( $name:tt($($v:tt: $t:ty),+) => $clicked:expr ) => {
+        #[derive(Component)]
+        struct $name {}
+
+        impl $name {
+            fn click(
+                $(mut $v: $t),+,
+                query: Query<&Interaction, (Changed<Interaction>, With<$name>)>,
+            ) {
+                if let Ok(interaction) = query.get_single() {
+                    match *interaction {
+                        Interaction::Clicked => $clicked,
+                        _ => return,
+                    }
+                }
+            }
+        }
+    };
 }
