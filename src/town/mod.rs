@@ -3,13 +3,12 @@ use crate::resources::*;
 use crate::AppState;
 use crate::Cleanup;
 use crate::Clickable;
-use bevy::app::AppExit;
 use bevy::prelude::*;
 
 // We use macros to build common components for running the ui.
-Cleanup!(MenuHint);
-Clickable!(PlayHint(state: ResMut<NextState<AppState>>) => state.set(AppState::Town));
-Clickable!(ExitHint(exit: EventWriter<AppExit>) => exit.send(AppExit));
+Cleanup!(CleanupHint);
+Clickable!(PlayHint(state: ResMut<NextState<AppState>>) => state.set(AppState::Game));
+Clickable!(ExitHint(state: ResMut<NextState<AppState>>) => state.set(AppState::Menu));
 
 // Mounts the menu systems
 pub struct MenuPlugin;
@@ -19,7 +18,7 @@ impl Plugin for MenuPlugin {
             .add_system(setup_menu.in_schedule(OnEnter(AppState::Menu)))
             .add_system(PlayHint::click.run_if(in_state(AppState::Menu)))
             .add_system(ExitHint::click.run_if(in_state(AppState::Menu)))
-            .add_system(MenuHint::cleanup.in_schedule(OnExit(AppState::Menu)));
+            .add_system(CleanupHint::cleanup.in_schedule(OnExit(AppState::Menu)));
     }
 }
 
@@ -44,21 +43,11 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                 background_color: palette::MENU_BACKGROUND.into(),
                 ..default()
             },
-            MenuHint {},
+            CleanupHint {},
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "ARPG".to_string(),
-                TextStyle {
-                    font: font.mono.to_owned(),
-                    font_size: 60.0,
-                    color: palette::MENU_TEXT_COLOR,
-                },
-            ));
-        })
-        .with_children(|parent| {
             InteractiveTextButton {
-                text: "Play".to_string(),
+                text: "Launch".to_string(),
                 text_style: TextStyle {
                     font: font.mono.clone(),
                     font_size: 40.0,
@@ -74,23 +63,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
         })
         .with_children(|parent| {
             InteractiveTextButton {
-                text: "Options".to_string(),
-                text_style: TextStyle {
-                    font: font.mono.clone(),
-                    font_size: 40.0,
-                    color: palette::MENU_TEXT_COLOR,
-                },
-                size: Size {
-                    width: Val::Px(200.),
-                    height: Val::Px(100.),
-                },
-                ..default()
-            }
-            .initialize(parent, ());
-        })
-        .with_children(|parent| {
-            InteractiveTextButton {
-                text: "Exit".to_string(),
+                text: "Menu".to_string(),
                 text_style: TextStyle {
                     font: font.mono.clone(),
                     font_size: 40.0,

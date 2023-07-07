@@ -4,8 +4,10 @@ use bevy_embedded_assets::EmbeddedAssetPlugin;
 
 mod camera;
 mod debug;
+mod macros;
 mod menu;
 mod resources;
+mod town;
 
 pub const RATIO: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 600.;
@@ -55,7 +57,8 @@ fn main() {
 enum AppState {
     #[default]
     Menu,
-    InGame,
+    Town,
+    Game,
 }
 
 // quick_close listens for quick exit conditions to ensure the game can always be closed.
