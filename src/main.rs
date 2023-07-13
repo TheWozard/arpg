@@ -4,6 +4,7 @@ use bevy_embedded_assets::EmbeddedAssetPlugin;
 
 mod camera;
 mod debug;
+mod game;
 mod macros;
 mod menu;
 mod resources;
@@ -28,28 +29,26 @@ fn main() {
                     }),
                     ..default()
                 })
-                // For pixel rendering
-                .set(ImagePlugin::default_nearest())
+                .set(ImagePlugin::default_nearest()) // For pixel rendering
                 .build()
-                // Uncomment to use bevy_mod_debugdump
-                // .disable::<LogPlugin>()
                 .add_before::<AssetPlugin, _>(EmbeddedAssetPlugin),
         )
         .add_state::<AppState>()
-        .add_plugin(resources::ResourcePlugin)
-        .add_plugin(menu::MenuPlugin)
-        // Constant Systems - These will always be running.
-        .add_system(quick_close)
-        .add_plugin(camera::CameraPlugin);
+        .add_plugins((
+            resources::ResourcePlugin,
+            menu::MenuPlugin,
+            town::TownPlugin,
+            game::GamePlugin,
+            camera::CameraPlugin,
+        ))
+        .add_systems(Update, quick_close);
 
     // We only compile in debugging ui if we arn't deployed to Web
     #[cfg(all(not(target_arch = "wasm32"), debug_assertions))]
     {
-        app.add_plugin(debug::DebugPlugin::default());
+        app.add_plugins(debug::DebugPlugin::default());
     }
 
-    // Use with cargo run | dot -Tsvg > out.svg
-    // bevy_mod_debugdump::print_main_schedule(&mut app);
     app.run();
 }
 
@@ -62,19 +61,10 @@ enum AppState {
 }
 
 // quick_close listens for quick exit conditions to ensure the game can always be closed.
-fn quick_close(
-    mut exit: EventWriter<AppExit>,
-    keyboard_input: Res<Input<KeyCode>>,
-    game_state: Res<State<AppState>>,
-) {
+fn quick_close(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {
     // Alt + F4 always works
-    let alt = keyboard_input.any_pressed([KeyCode::LAlt, KeyCode::RAlt]);
+    let alt = keyboard_input.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
     if alt && keyboard_input.pressed(KeyCode::F4) {
         exit.send(AppExit)
-    }
-    // Escape only works in AppState::Menu
-    match (game_state.0, keyboard_input.pressed(KeyCode::Escape)) {
-        (AppState::Menu, true) => exit.send(AppExit),
-        (_, _) => (),
     }
 }

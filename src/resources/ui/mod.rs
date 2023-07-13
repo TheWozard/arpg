@@ -5,6 +5,6 @@ pub mod button;
 pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(button::interact_with_interactive_buttons);
+        app.add_systems(Update, button::interact_with_interactive_buttons);
     }
 }

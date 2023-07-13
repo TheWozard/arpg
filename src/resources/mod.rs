@@ -10,8 +10,8 @@ pub mod ui;
 pub struct ResourcePlugin;
 impl Plugin for ResourcePlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(ascii::load_ascii.in_base_set(StartupSet::PreStartup));
-        app.add_startup_system(fonts::load_fonts.in_base_set(StartupSet::PreStartup));
+        app.add_systems(PreStartup, (ascii::load_ascii, fonts::load_fonts));
+        app.add_plugins(ui::UiPlugin);
     }
 }
 

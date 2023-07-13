@@ -15,11 +15,12 @@ Clickable!(ExitHint(exit: EventWriter<AppExit>) => exit.send(AppExit));
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(crate::resources::ui::UiPlugin)
-            .add_system(setup_menu.in_schedule(OnEnter(AppState::Menu)))
-            .add_system(PlayHint::click.run_if(in_state(AppState::Menu)))
-            .add_system(ExitHint::click.run_if(in_state(AppState::Menu)))
-            .add_system(MenuHint::cleanup.in_schedule(OnExit(AppState::Menu)));
+        app.add_systems(OnEnter(AppState::Menu), setup_menu);
+        app.add_systems(
+            Update,
+            (PlayHint::click, ExitHint::click).run_if(in_state(AppState::Menu)),
+        );
+        app.add_systems(OnExit(AppState::Menu), MenuHint::cleanup);
     }
 }
 
@@ -28,17 +29,12 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size {
-                        width: Val::Percent(100.),
-                        height: Val::Percent(100.),
-                    },
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     flex_direction: FlexDirection::Column,
-                    gap: Size {
-                        width: Val::Px(20.),
-                        height: Val::Px(20.),
-                    },
+                    row_gap: Val::Px(20.),
                     ..default()
                 },
                 background_color: palette::MENU_BACKGROUND.into(),
@@ -64,10 +60,8 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                     font_size: 40.0,
                     color: palette::MENU_TEXT_COLOR,
                 },
-                size: Size {
-                    width: Val::Px(300.),
-                    height: Val::Px(110.),
-                },
+                width: Val::Px(300.),
+                height: Val::Px(110.),
                 ..default()
             }
             .initialize(parent, PlayHint {});
@@ -80,10 +74,8 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                     font_size: 40.0,
                     color: palette::MENU_TEXT_COLOR,
                 },
-                size: Size {
-                    width: Val::Px(200.),
-                    height: Val::Px(100.),
-                },
+                width: Val::Px(200.),
+                height: Val::Px(100.),
                 ..default()
             }
             .initialize(parent, ());
@@ -96,10 +88,8 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                     font_size: 40.0,
                     color: palette::MENU_TEXT_COLOR,
                 },
-                size: Size {
-                    width: Val::Px(200.),
-                    height: Val::Px(100.),
-                },
+                width: Val::Px(200.),
+                height: Val::Px(100.),
                 ..default()
             }
             .initialize(parent, ExitHint {});

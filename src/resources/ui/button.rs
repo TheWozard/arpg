@@ -30,7 +30,7 @@ pub fn interact_with_interactive_buttons(
 ) {
     if let Ok((interaction, mut background_color, button)) = query.get_single_mut() {
         match *interaction {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 *background_color = button.clicked_color.into();
             }
             Interaction::Hovered => {
@@ -50,7 +50,8 @@ pub struct InteractiveTextButton {
     pub text: String,
     pub text_style: TextStyle,
     pub color: InteractiveBackgroundColor,
-    pub size: Size,
+    pub width: Val,
+    pub height: Val,
 }
 
 impl Default for InteractiveTextButton {
@@ -63,10 +64,8 @@ impl Default for InteractiveTextButton {
                 ..default()
             },
             color: InteractiveBackgroundColor::default(),
-            size: Size {
-                width: Val::Px(200.),
-                height: Val::Px(100.),
-            },
+            width: Val::Px(200.),
+            height: Val::Px(100.),
         }
     }
 }
@@ -77,7 +76,8 @@ impl InteractiveTextButton {
             .spawn((
                 ButtonBundle {
                     style: Style {
-                        size: self.size,
+                        width: self.width,
+                        height: self.height,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
                         ..default()

@@ -11,7 +11,7 @@ macro_rules! Clickable {
             ) {
                 if let Ok(interaction) = query.get_single() {
                     match *interaction {
-                        Interaction::Clicked => $clicked,
+                        Interaction::Pressed => $clicked,
                         _ => return,
                     }
                 }

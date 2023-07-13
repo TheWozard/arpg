@@ -17,7 +17,7 @@ impl Default for DebugPlugin {
 // Plugin grouping all debug functionality
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_plugin(
+        app.add_plugins(
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, self.debug_key_code)),
         );
     }

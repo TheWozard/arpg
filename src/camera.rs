@@ -100,13 +100,10 @@ pub struct CameraPlugin;
 // Plugin grouping all basic camera functionality
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(CameraSettings::default())
-            .insert_resource(WorldCursor::default())
-            .add_startup_system(spawn_camera)
-            .add_system(camera_movement)
-            .add_system(world_cursor_tracker)
-            .register_type::<WorldCursor>()
-            .register_type::<CameraSettings>()
-            .register_type::<ControlledCamera>();
+        app.insert_resource(CameraSettings::default());
+        app.insert_resource(WorldCursor::default());
+
+        app.add_systems(Startup, spawn_camera);
+        app.add_systems(Update, (camera_movement, world_cursor_tracker));
     }
 }

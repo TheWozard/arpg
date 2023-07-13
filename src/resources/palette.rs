@@ -24,3 +24,5 @@ pub const MENU_BUTTON_BACKGROUND: Color = color!(255., 236., 209.); // #FFECD1
 pub const MENU_BUTTON_HOVERED_BACKGROUND: Color = color!(255., 246., 217.);
 pub const MENU_BUTTON_CLICKED_BACKGROUND: Color = color!(120., 41., 15.); // #78290F
 pub const MENU_TEXT_COLOR: Color = color!(00., 21., 36.); // #001524
+
+pub const TOWN_BACKGROUND: Color = color!(120., 41., 15.); // #78290F
