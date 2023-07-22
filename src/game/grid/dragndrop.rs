@@ -1,11 +1,18 @@
 use crate::camera::WorldCursor;
 use bevy::prelude::*;
 
+pub struct DragNDrop;
+impl Plugin for DragNDrop {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_systems(Update, (dragndrop_activation, dragndrop_movement))
+            .register_type::<Draggable>();
+    }
+}
+
 #[derive(Reflect, Component, Default)]
 #[reflect(Component)]
 pub struct Draggable {
     active: bool,
-    // offset: Vec2,
 }
 
 pub fn dragndrop_activation(
@@ -40,13 +47,5 @@ pub fn dragndrop_movement(
                 trans.translation = world_location.position.extend(trans.translation.z)
             }
         }
-    }
-}
-
-pub struct DragNDrop;
-impl Plugin for DragNDrop {
-    fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(Update, (dragndrop_activation, dragndrop_movement))
-            .register_type::<Draggable>();
     }
 }

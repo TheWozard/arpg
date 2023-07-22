@@ -31,8 +31,8 @@ pub fn spawn_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
     ));
 }
 
-pub fn spawn_boxes(mut commands: Commands, ascii: Res<AsciiSheet>) {
-    for n in 0..10 {
+pub fn spawn_boxes(count: &i32, commands: &mut Commands, ascii: &Res<AsciiSheet>) {
+    for n in 0..*count {
         commands.spawn((
             SpriteSheetBundle {
                 texture_atlas: ascii.atlas.clone(),

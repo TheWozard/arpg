@@ -19,3 +19,22 @@ macro_rules! Clickable {
         }
     };
 }
+
+#[macro_export]
+macro_rules! StateBasedPlugin {
+    ( $name:tt ) => {
+        pub struct $name<S: States> {
+            s: S,
+        }
+
+        impl<S: States> $name<S> {
+            pub fn new(state: S) -> Self {
+                Self { s: state }
+            }
+
+            fn state(&self) -> S {
+                self.s.clone()
+            }
+        }
+    };
+}

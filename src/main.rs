@@ -38,7 +38,7 @@ fn main() {
             resources::ResourcePlugin,
             menu::MenuPlugin,
             town::TownPlugin,
-            game::GamePlugin,
+            game::MapPlugin::new(AppState::Game),
             camera::CameraPlugin,
         ))
         .add_systems(Update, quick_close);
@@ -54,9 +54,9 @@ fn main() {
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 enum AppState {
-    #[default]
     Menu,
     Town,
+    #[default]
     Game,
 }
 
