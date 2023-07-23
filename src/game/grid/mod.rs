@@ -1,5 +1,5 @@
 use crate::camera::WorldCursor;
-use crate::resources::ascii;
+use crate::resources::isometric;
 use crate::StateBasedPlugin;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
@@ -22,7 +22,7 @@ impl<S: States> Plugin for GridPlugin<S> {
 
         app.insert_resource(Grid::new(
             IVec2::new(10, 10),
-            ascii::TILE_TRUE_SCALE,
+            isometric::SPACING,
             Vec2::new(0., 0.),
         ));
         app.insert_resource(GridCursor::default());
@@ -38,9 +38,7 @@ impl<S: States> Plugin for GridPlugin<S> {
         );
         app.add_systems(
             Update,
-            (selection::select_tile)
-                .chain()
-                .run_if(in_state(self.state())),
+            selection::select_tile.run_if(in_state(self.state())),
         );
     }
 }
@@ -50,7 +48,7 @@ impl<S: States> Plugin for GridPlugin<S> {
 #[reflect(Resource, InspectorOptions)]
 pub struct GridCursor {
     pub position: IVec2,
-    pub translation: Vec2,
+    pub translation: Vec3,
 }
 impl GridCursor {
     /// System responsible for keeping the GridCursor up to date
@@ -74,7 +72,7 @@ impl GridCursorFollowHint {
         cursor: Res<GridCursor>,
     ) {
         for mut transform in entity.iter_mut() {
-            transform.translation = cursor.translation.extend(transform.translation.z)
+            transform.translation = cursor.translation
         }
     }
 }
@@ -94,9 +92,7 @@ impl GridTracked {
         for (mut transform, mut tracker, entity) in &mut entities {
             let pos = grid.grid_position_from_translation(transform.translation);
             // Snap
-            transform.translation = grid
-                .world_position_from_grid_position(&pos)
-                .extend(transform.translation.z);
+            transform.translation = grid.world_position_from_grid_position(&pos);
 
             // Grid Update
             if pos != tracker.position {
@@ -139,7 +135,7 @@ impl Grid {
         Grid {
             tiles: vec![Tile::default(); (size.x * size.y) as usize],
             size: size,
-            scale: scale,
+            scale: Vec2::new(scale.x / 2., scale.y / 4.),
             offset: offset,
         }
     }
@@ -164,16 +160,17 @@ impl Grid {
     /// Converts a bevy based position to a grid based position. Uses standard .round() for translation.
     pub fn grid_position_from_world_position(&self, world: Vec2) -> IVec2 {
         IVec2::new(
-            ((world.x - self.offset.x) / self.scale.x).round() as i32,
-            ((world.y - self.offset.y) / self.scale.y).round() as i32,
+            (((world.x / self.scale.x) + (world.y / self.scale.y)) / 2.).round() as i32,
+            (((world.y / self.scale.y) - (world.x / self.scale.x)) / 2.).round() as i32,
         )
     }
 
     /// Converts a grid based position to a bevy based position. Will always be a multiple of scale.
-    pub fn world_position_from_grid_position(&self, position: &IVec2) -> Vec2 {
-        Vec2::new(
-            (position.x as f32 * self.scale.x) - self.offset.x,
-            (position.y as f32 * self.scale.y) - self.offset.y,
+    pub fn world_position_from_grid_position(&self, position: &IVec2) -> Vec3 {
+        Vec3::new(
+            (position.x as f32 - position.y as f32) * self.scale.x,
+            (position.x as f32 + position.y as f32) * self.scale.y,
+            (100 - (position.x + position.y)) as f32,
         )
     }
 

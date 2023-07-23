@@ -4,6 +4,7 @@ use crate::AppState;
 use crate::Cleanup;
 use crate::Clickable;
 use bevy::prelude::*;
+use bevy_inspector_egui::prelude::*;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 enum TownState {
@@ -55,7 +56,7 @@ fn on_exit(mut state: ResMut<NextState<TownState>>) {
     state.set(TownState::Closed);
 }
 
-fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
+fn setup_menu(mut commands: Commands, res: Res<Resources>) {
     commands
         .spawn((
             NodeBundle {
@@ -77,7 +78,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "Launch".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 40.0,
                     color: palette::menu::TEXT_COLOR,
                 },
@@ -91,7 +92,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "Tree".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 40.0,
                     color: palette::menu::TEXT_COLOR,
                 },
@@ -105,7 +106,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "Menu".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 40.0,
                     color: palette::menu::TEXT_COLOR,
                 },
@@ -117,7 +118,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
         });
 }
 
-fn setup_tree_ui(mut commands: Commands, font: Res<fonts::Fonts>) {
+fn setup_tree_ui(mut commands: Commands, res: Res<Resources>) {
     commands
         .spawn((
             NodeBundle {
@@ -136,7 +137,7 @@ fn setup_tree_ui(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "X".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 30.0,
                     color: palette::menu::TEXT_COLOR,
                 },

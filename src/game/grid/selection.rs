@@ -1,5 +1,6 @@
 use crate::game::grid::*;
 use crate::game::*;
+use crate::resources::*;
 use bevy_inspector_egui::prelude::*;
 
 #[derive(Resource, Reflect, Default, InspectorOptions)]
@@ -13,7 +14,7 @@ pub fn select_tile(
     mut selection: ResMut<GridSelection>,
     buttons: Res<Input<MouseButton>>,
     grid_cursor: Res<grid::GridCursor>,
-    ascii: Res<AsciiSheet>,
+    resources: Res<Resources>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
         if let Some(a) = selection.selected {
@@ -24,7 +25,7 @@ pub fn select_tile(
         selection.selected = Some(grid::generator::spawn_selection_cursor(
             grid_cursor.translation,
             &mut commands,
-            &ascii,
+            &resources,
         ));
     }
 }

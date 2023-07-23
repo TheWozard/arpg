@@ -38,12 +38,6 @@ pub enum AsciiIndex {
     P = sheet_index!(5, 0),
 }
 
-#[derive(Resource)]
-pub struct AsciiSheet {
-    pub atlas: Handle<TextureAtlas>,
-    pub image: Handle<Image>,
-}
-
 #[allow(clippy::from_over_into)] // We cant create a From for usize
 impl Into<usize> for AsciiIndex {
     fn into(self: Self) -> usize {
@@ -51,23 +45,29 @@ impl Into<usize> for AsciiIndex {
     }
 }
 
-pub fn load_ascii(
-    mut commands: Commands,
-    assets: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-) {
-    let image = assets.load("Ascii.png");
-    let atlas = TextureAtlas::from_grid(
-        image.clone(),
-        TILE_SIZE,
-        TOTAL_COLUMNS as usize,
-        ITEMS_PER_COLUMN as usize,
-        Some(Vec2::splat(2.0)),
-        None,
-    );
+#[derive(Resource)]
+pub struct AsciiSheet {
+    pub atlas: Handle<TextureAtlas>,
+    pub image: Handle<Image>,
+}
+impl AsciiSheet {
+    pub fn load(
+        assets: &Res<AssetServer>,
+        texture_atlases: &mut ResMut<Assets<TextureAtlas>>,
+    ) -> AsciiSheet {
+        let image = assets.load("Ascii.png");
+        let atlas = TextureAtlas::from_grid(
+            image.clone(),
+            TILE_SIZE,
+            TOTAL_COLUMNS as usize,
+            ITEMS_PER_COLUMN as usize,
+            Some(Vec2::splat(2.0)),
+            None,
+        );
 
-    commands.insert_resource(AsciiSheet {
-        atlas: texture_atlases.add(atlas),
-        image: image,
-    });
+        AsciiSheet {
+            atlas: texture_atlases.add(atlas),
+            image: image,
+        }
+    }
 }

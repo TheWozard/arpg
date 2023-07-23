@@ -3,15 +3,15 @@ use crate::resources::*;
 
 pub struct Cursor;
 impl Generator for Cursor {
-    fn generate(&self, commands: &mut Commands, ascii: &Res<AsciiSheet>) {
-        spawn_cursor(commands, ascii)
+    fn generate(&self, commands: &mut Commands, resources: &Res<Resources>, _: &Res<grid::Grid>) {
+        spawn_cursor(commands, resources)
     }
 }
 
-pub fn spawn_cursor(commands: &mut Commands, ascii: &Res<ascii::AsciiSheet>) {
+pub fn spawn_cursor(commands: &mut Commands, resources: &Res<Resources>) {
     commands.spawn((
         SpriteSheetBundle {
-            texture_atlas: ascii.atlas.clone(),
+            texture_atlas: resources.ascii.atlas.clone(),
             sprite: TextureAtlasSprite {
                 index: ascii::AsciiIndex::FullSquare.into(),
                 color: palette::game::ITEM.with_a(0.2),
@@ -27,31 +27,30 @@ pub fn spawn_cursor(commands: &mut Commands, ascii: &Res<ascii::AsciiSheet>) {
         Name::new("Cursor"),
         grid::GridTracked::default(),
         grid::GridCursorFollowHint,
-        actors::GameHint::default(),
+        cleanup::CleanupHint,
     ));
 }
 
 pub fn spawn_selection_cursor(
-    transform: Vec2,
+    transform: Vec3,
     commands: &mut Commands,
-    ascii: &Res<ascii::AsciiSheet>,
+    resources: &Res<Resources>,
 ) -> Entity {
     commands
         .spawn((
             SpriteSheetBundle {
-                texture_atlas: ascii.atlas.clone(),
+                texture_atlas: resources.ascii.atlas.clone(),
                 sprite: TextureAtlasSprite {
                     index: ascii::AsciiIndex::FullSquare.into(),
                     color: palette::game::ITEM.with_a(0.1),
                     ..default()
                 },
-                transform: Transform::from_scale(ascii::ASCII_SCALE)
-                    .with_translation(transform.extend(layers::PLAYER)),
+                transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(transform),
                 ..default()
             },
             Name::new("Selection"),
             grid::GridTracked::default(),
-            actors::GameHint::default(),
+            cleanup::CleanupHint,
         ))
         .id()
 }

@@ -5,6 +5,7 @@ use crate::Cleanup;
 use crate::Clickable;
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use bevy_inspector_egui::prelude::*;
 
 // We use macros to build common components for running the ui.
 Cleanup!(MenuHint);
@@ -24,7 +25,7 @@ impl Plugin for MenuPlugin {
     }
 }
 
-fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
+fn setup_menu(mut commands: Commands, res: Res<Resources>) {
     commands
         .spawn((
             NodeBundle {
@@ -46,7 +47,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             parent.spawn(TextBundle::from_section(
                 "ARPG".to_string(),
                 TextStyle {
-                    font: font.mono.to_owned(),
+                    font: res.fonts.mono.to_owned(),
                     font_size: 60.0,
                     color: palette::menu::TEXT_COLOR,
                 },
@@ -56,7 +57,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "Play".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 40.0,
                     color: palette::menu::TEXT_COLOR,
                 },
@@ -70,7 +71,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "Options".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 40.0,
                     color: palette::menu::TEXT_COLOR,
                 },
@@ -84,7 +85,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
             InteractiveTextButton {
                 text: "Exit".to_string(),
                 text_style: TextStyle {
-                    font: font.mono.clone(),
+                    font: res.fonts.mono.clone(),
                     font_size: 40.0,
                     color: palette::menu::TEXT_COLOR,
                 },

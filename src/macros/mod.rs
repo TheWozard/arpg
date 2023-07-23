@@ -3,8 +3,9 @@ mod menu;
 #[macro_export]
 macro_rules! Cleanup {
     ( $name:tt ) => {
-        #[derive(Component, Default)]
-        pub struct $name {}
+        #[derive(Component, Reflect, Default, InspectorOptions)]
+        #[reflect(Component, InspectorOptions)]
+        pub struct $name;
 
         impl $name {
             pub fn cleanup(mut commands: Commands, q: Query<Entity, With<$name>>) {
