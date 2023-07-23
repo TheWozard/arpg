@@ -11,9 +11,9 @@ pub struct InteractiveBackgroundColor {
 impl Default for InteractiveBackgroundColor {
     fn default() -> Self {
         InteractiveBackgroundColor {
-            default_color: palette::MENU_BUTTON_BACKGROUND,
-            hovered_color: palette::MENU_BUTTON_HOVERED_BACKGROUND,
-            clicked_color: palette::MENU_BUTTON_CLICKED_BACKGROUND,
+            default_color: palette::menu::button::BACKGROUND,
+            hovered_color: palette::menu::button::HOVERED_BACKGROUND,
+            clicked_color: palette::menu::button::CLICKED_BACKGROUND,
         }
     }
 }
@@ -60,7 +60,7 @@ impl Default for InteractiveTextButton {
             text: "Default".to_string(),
             text_style: TextStyle {
                 font_size: 40.0,
-                color: palette::MENU_TEXT_COLOR,
+                color: palette::menu::TEXT_COLOR,
                 ..default()
             },
             color: InteractiveBackgroundColor::default(),

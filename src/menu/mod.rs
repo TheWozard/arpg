@@ -1,5 +1,5 @@
-use crate::resources::ui::button::*;
 use crate::resources::*;
+use crate::ui::button::*;
 use crate::AppState;
 use crate::Cleanup;
 use crate::Clickable;
@@ -37,7 +37,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                     row_gap: Val::Px(20.),
                     ..default()
                 },
-                background_color: palette::MENU_BACKGROUND.into(),
+                background_color: palette::menu::main::BACKGROUND.into(),
                 ..default()
             },
             MenuHint {},
@@ -48,7 +48,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                 TextStyle {
                     font: font.mono.to_owned(),
                     font_size: 60.0,
-                    color: palette::MENU_TEXT_COLOR,
+                    color: palette::menu::TEXT_COLOR,
                 },
             ));
         })
@@ -58,7 +58,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                 text_style: TextStyle {
                     font: font.mono.clone(),
                     font_size: 40.0,
-                    color: palette::MENU_TEXT_COLOR,
+                    color: palette::menu::TEXT_COLOR,
                 },
                 width: Val::Px(300.),
                 height: Val::Px(110.),
@@ -72,7 +72,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                 text_style: TextStyle {
                     font: font.mono.clone(),
                     font_size: 40.0,
-                    color: palette::MENU_TEXT_COLOR,
+                    color: palette::menu::TEXT_COLOR,
                 },
                 width: Val::Px(200.),
                 height: Val::Px(100.),
@@ -86,7 +86,7 @@ fn setup_menu(mut commands: Commands, font: Res<fonts::Fonts>) {
                 text_style: TextStyle {
                     font: font.mono.clone(),
                     font_size: 40.0,
-                    color: palette::MENU_TEXT_COLOR,
+                    color: palette::menu::TEXT_COLOR,
                 },
                 width: Val::Px(200.),
                 height: Val::Px(100.),

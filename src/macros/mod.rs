@@ -15,3 +15,26 @@ macro_rules! Cleanup {
         }
     };
 }
+
+#[macro_export]
+macro_rules! DebugOnly {
+    ( $($tts:tt)* ) => {
+        #[cfg(all(not(target_arch = "wasm32")))]
+        {
+            $($tts)*
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! DebugAttributes {
+    ( $attr:tt, $($tts:tt)* ) => {
+        #[derive($attr)]
+        #[cfg_attr(
+            all(not(target_arch = "wasm32")),
+            derive(Reflect, Default, InspectorOptions)
+        )]
+        #[cfg_attr(all(not(target_arch = "wasm32")), reflect($attr, InspectorOptions))]
+        $($tts)*
+    };
+}

@@ -1,28 +1,38 @@
-#![allow(dead_code)]
-use bevy::prelude::Color;
-
 /// Allows the usage of 255 based values for defining colors.
-macro_rules! color {
+/// This enables some vs code extensions to match the color and display.
+macro_rules! rgb {
     ($r:expr, $g:expr, $b:expr) => {
-        Color::rgb($r / 255., $g / 255., $b / 255.)
+        Color::rgb($r as f32 / 255., $g as f32 / 255., $b as f32 / 255.)
     };
 }
 
-// https://coolors.co/palette/001524-15616d-ffecd1-ff7d00-78290f
-pub const BACKGROUND: Color = color!(00., 21., 36.); // #001524
-pub const MIDGROUND: Color = color!(21., 97., 109.); // #15616D
-pub const PLAYER: Color = color!(255., 236., 209.); // #FFECD1
-pub const ENEMY: Color = color!(120., 41., 15.); // #78290F
+pub mod game {
+    use bevy::prelude::Color;
+    pub const BACKGROUND: Color = rgb!(00, 21, 36);
+    pub const MIDGROUND: Color = rgb!(21, 97, 109);
+    pub const PLAYER: Color = rgb!(255, 236, 209);
+    pub const ENEMY: Color = rgb!(120, 41, 15);
+    pub const ITEM: Color = rgb!(255, 125, 0);
+}
 
-// pub const ITEM: Color = color!(255., 125., 0.); // #FF7D00
+pub mod menu {
+    use bevy::prelude::Color;
+    pub const TEXT_COLOR: Color = rgb!(00, 21, 36);
 
-pub const TILE_COLORS: [Color; 3] = [PLAYER, ENEMY, MIDGROUND];
+    pub mod button {
+        use bevy::prelude::Color;
+        pub const BACKGROUND: Color = rgb!(255, 236, 209);
+        pub const HOVERED_BACKGROUND: Color = rgb!(255, 246, 217);
+        pub const CLICKED_BACKGROUND: Color = rgb!(120, 41, 15);
+    }
 
-// UI Components
-pub const MENU_BACKGROUND: Color = color!(21., 97., 109.); // #15616D
-pub const MENU_BUTTON_BACKGROUND: Color = color!(255., 236., 209.); // #FFECD1
-pub const MENU_BUTTON_HOVERED_BACKGROUND: Color = color!(255., 246., 217.);
-pub const MENU_BUTTON_CLICKED_BACKGROUND: Color = color!(120., 41., 15.); // #78290F
-pub const MENU_TEXT_COLOR: Color = color!(00., 21., 36.); // #001524
+    pub mod main {
+        use bevy::prelude::Color;
+        pub const BACKGROUND: Color = rgb!(21, 97, 109);
+    }
 
-pub const TOWN_BACKGROUND: Color = color!(120., 41., 15.); // #78290F
+    pub mod town {
+        use bevy::prelude::Color;
+        pub const BACKGROUND: Color = rgb!(120, 41, 15);
+    }
+}

@@ -1,71 +1,90 @@
 use crate::camera::WorldCursor;
 use crate::resources::ascii;
+use crate::StateBasedPlugin;
 use bevy::prelude::*;
 use bevy::utils::HashSet;
 use bevy_inspector_egui::prelude::*;
 
+use self::selection::GridSelection;
+
 pub mod dragndrop;
+pub mod generator;
+pub mod selection;
 
-/// GridPlugin loads the Grid resource and adds systems responsible for maintaining the grid.
-pub struct GridPlugin<S: States> {
-    state: S,
-}
-
-impl<S: States> GridPlugin<S> {
-    pub fn new(state: S) -> Self {
-        GridPlugin { state: state }
-    }
-}
-
+StateBasedPlugin!(GridPlugin);
 impl<S: States> Plugin for GridPlugin<S> {
     fn build(&self, app: &mut App) {
+        // Debug mounting.
+        app.register_type::<GridCursor>();
+        app.register_type::<GridCursorFollowHint>();
+        app.register_type::<GridTracked>();
+        app.register_type::<selection::GridSelection>();
+
         app.insert_resource(Grid::new(
             IVec2::new(10, 10),
             ascii::TILE_TRUE_SCALE,
             Vec2::new(0., 0.),
         ));
         app.insert_resource(GridCursor::default());
+        app.insert_resource(GridSelection::default());
         app.add_systems(
             Update,
             (
                 GridCursor::track,
-                dragndrop::dragndrop_movement,
-                GridTracked::track,
+                (GridTracked::track, GridCursorFollowHint::track),
             )
                 .chain()
-                .run_if(in_state(self.state.clone())),
+                .run_if(in_state(self.state())),
+        );
+        app.add_systems(
+            Update,
+            (selection::select_tile)
+                .chain()
+                .run_if(in_state(self.state())),
         );
     }
 }
 
 /// GridCursor resource for storing the current grid position the cursor is in. This position is not guaranteed to exist.
-#[derive(Reflect, Resource, Default, InspectorOptions)]
+#[derive(Resource, Reflect, Default, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 pub struct GridCursor {
     pub position: IVec2,
+    pub translation: Vec2,
 }
-
 impl GridCursor {
     /// System responsible for keeping the GridCursor up to date
     fn track(world_cursor: Res<WorldCursor>, mut grid_cursor: ResMut<GridCursor>, grid: Res<Grid>) {
-        grid_cursor.position = grid.grid_position_from_world_position(world_cursor.position)
-    }
-}
-
-/// GridTracked forces a Transform to align with the grid.
-#[derive(Component)]
-pub struct GridTracked {
-    pub position: IVec2,
-}
-
-impl Default for GridTracked {
-    fn default() -> Self {
-        GridTracked {
-            position: IVec2::default(),
+        let position = grid.grid_position_from_world_position(world_cursor.position);
+        if grid_cursor.position != position {
+            grid_cursor.position = grid.grid_position_from_world_position(world_cursor.position);
+            grid_cursor.translation = grid.world_position_from_grid_position(&grid_cursor.position);
         }
     }
 }
 
+/// FollowGridCursorHint updates the given entity Transform based on GridCursor.
+#[derive(Component, Reflect, Default, InspectorOptions)]
+#[reflect(Component, InspectorOptions)]
+pub struct GridCursorFollowHint;
+impl GridCursorFollowHint {
+    /// System responsible for updating Transform. Does not touch the Z value of the Transform.
+    fn track(
+        mut entity: Query<&mut Transform, With<GridCursorFollowHint>>,
+        cursor: Res<GridCursor>,
+    ) {
+        for mut transform in entity.iter_mut() {
+            transform.translation = cursor.translation.extend(transform.translation.z)
+        }
+    }
+}
+
+/// GridTracked forces a Transform to align with the grid.
+#[derive(Component, Reflect, Default, InspectorOptions)]
+#[reflect(Component, InspectorOptions)]
+pub struct GridTracked {
+    pub position: IVec2,
+}
 impl GridTracked {
     /// System responsible for updating GridTracked components and moving Transform translations
     fn track(

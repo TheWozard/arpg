@@ -31,7 +31,10 @@ struct Map {
 impl Default for Map {
     fn default() -> Self {
         Self {
-            generator: SequentialGeneration::new(vec![TileSet::Basic(5).new()]),
+            generator: SequentialGeneration::new(vec![
+                Box::new(TileSet::Basic(5)),
+                Box::new(grid::generator::Cursor),
+            ]),
         }
     }
 }
@@ -67,13 +70,6 @@ enum TileSet {
     Basic(i32),
     Default,
 }
-
-impl TileSet {
-    pub fn new(self) -> Box<Self> {
-        Box::new(self)
-    }
-}
-
 impl Generator for TileSet {
     fn generate(&self, commands: &mut Commands, ascii: &Res<AsciiSheet>) {
         match self {

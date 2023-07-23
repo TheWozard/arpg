@@ -9,13 +9,14 @@ mod macros;
 mod menu;
 mod resources;
 mod town;
+mod ui;
 
 pub const RATIO: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 600.;
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(ClearColor(resources::palette::BACKGROUND))
+    app.insert_resource(ClearColor(Color::BLACK))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -36,15 +37,16 @@ fn main() {
         .add_state::<AppState>()
         .add_plugins((
             resources::ResourcePlugin,
+            ui::UiPlugin,
+            camera::CameraPlugin,
             menu::MenuPlugin,
             town::TownPlugin,
             game::MapPlugin::new(AppState::Game),
-            camera::CameraPlugin,
         ))
         .add_systems(Update, quick_close);
 
     // We only compile in debugging ui if we arn't deployed to Web
-    #[cfg(all(not(target_arch = "wasm32"), debug_assertions))]
+    #[cfg(all(not(target_arch = "wasm32")))]
     {
         app.add_plugins(debug::DebugPlugin::default());
     }
