@@ -20,11 +20,7 @@ impl<S: States> Plugin for GridPlugin<S> {
         app.register_type::<GridTracked>();
         app.register_type::<selection::GridSelection>();
 
-        app.insert_resource(Grid::new(
-            IVec2::new(10, 10),
-            isometric::SPACING,
-            Vec2::new(0., 0.),
-        ));
+        app.insert_resource(Grid::new(IVec2::new(10, 10), isometric::SPACING));
         app.insert_resource(GridCursor::default());
         app.insert_resource(GridSelection::default());
         app.add_systems(
@@ -56,7 +52,8 @@ impl GridCursor {
         let position = grid.grid_position_from_world_position(world_cursor.position);
         if grid_cursor.position != position {
             grid_cursor.position = grid.grid_position_from_world_position(world_cursor.position);
-            grid_cursor.translation = grid.world_position_from_grid_position(&grid_cursor.position);
+            grid_cursor.translation =
+                grid.world_position_on_top_from_grid_position(&grid_cursor.position);
         }
     }
 }
@@ -126,17 +123,15 @@ pub struct Grid {
     tiles: Vec<Tile>,
     size: IVec2,
     scale: Vec2,
-    offset: Vec2,
 }
 
 impl Grid {
     /// Convenience function for building new grids.
-    pub fn new(size: IVec2, scale: Vec2, offset: Vec2) -> Self {
+    pub fn new(size: IVec2, scale: Vec2) -> Self {
         Grid {
             tiles: vec![Tile::default(); (size.x * size.y) as usize],
             size: size,
             scale: Vec2::new(scale.x / 2., scale.y / 4.),
-            offset: offset,
         }
     }
 
@@ -172,6 +167,11 @@ impl Grid {
             (position.x as f32 + position.y as f32) * self.scale.y,
             (100 - (position.x + position.y)) as f32,
         )
+    }
+
+    pub fn world_position_on_top_from_grid_position(&self, position: &IVec2) -> Vec3 {
+        self.world_position_from_grid_position(position)
+            + Vec3::new(0., (self.scale.y * 2.) - 2., 0.)
     }
 
     /// Adds a lightweight entity handle to a given grid position. Returns true if the tile exists.

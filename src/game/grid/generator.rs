@@ -3,29 +3,30 @@ use crate::resources::*;
 
 pub struct Cursor;
 impl Generator for Cursor {
-    fn generate(&self, commands: &mut Commands, resources: &Res<Resources>, _: &Res<grid::Grid>) {
-        spawn_cursor(commands, resources)
+    fn generate(
+        &self,
+        commands: &mut Commands,
+        resources: &Res<Resources>,
+        grid: &Res<grid::Grid>,
+    ) {
+        spawn_cursor(commands, resources, grid)
     }
 }
 
-pub fn spawn_cursor(commands: &mut Commands, resources: &Res<Resources>) {
+pub fn spawn_cursor(commands: &mut Commands, resources: &Res<Resources>, grid: &Res<grid::Grid>) {
     commands.spawn((
         SpriteSheetBundle {
             texture_atlas: resources.ascii.atlas.clone(),
             sprite: TextureAtlasSprite {
                 index: ascii::AsciiIndex::FullSquare.into(),
-                color: palette::game::ITEM.with_a(0.2),
+                color: palette::game::PLAYER.with_a(0.5),
                 ..default()
             },
-            transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(Vec3::new(
-                0.,
-                0.,
-                layers::PLAYER,
-            )),
+            transform: Transform::from_scale(ascii::ASCII_SCALE)
+                .with_translation(grid.world_position_on_top_from_grid_position(&IVec2::new(0, 0))),
             ..default()
         },
         Name::new("Cursor"),
-        grid::GridTracked::default(),
         grid::GridCursorFollowHint,
         cleanup::CleanupHint,
     ));
@@ -42,14 +43,13 @@ pub fn spawn_selection_cursor(
                 texture_atlas: resources.ascii.atlas.clone(),
                 sprite: TextureAtlasSprite {
                     index: ascii::AsciiIndex::FullSquare.into(),
-                    color: palette::game::ITEM.with_a(0.1),
+                    color: palette::game::ITEM.with_a(0.5),
                     ..default()
                 },
                 transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(transform),
                 ..default()
             },
             Name::new("Selection"),
-            grid::GridTracked::default(),
             cleanup::CleanupHint,
         ))
         .id()

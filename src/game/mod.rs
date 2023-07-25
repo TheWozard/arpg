@@ -6,6 +6,7 @@ use bevy::prelude::*;
 mod cleanup;
 mod generator;
 pub mod grid;
+mod pools;
 
 crate::StateBasedPlugin!(MapPlugin);
 impl<S: States> Plugin for MapPlugin<S> {
@@ -33,7 +34,9 @@ impl Default for Map {
     fn default() -> Self {
         Self {
             generator: SequentialGeneration::new(vec![
-                Box::new(TileSet::Basic(5)),
+                Box::new(TileSet::Basic(IVec2::new(10, 10))),
+                Box::new(TileSet::Player(IVec2::new(4, 4))),
+                Box::new(TileSet::Enemies(3, IVec2::new(10, 10))),
                 Box::new(grid::generator::Cursor),
             ]),
         }
@@ -83,7 +86,9 @@ impl Generator for SequentialGeneration {
 
 #[allow(dead_code)]
 enum TileSet {
-    Basic(i32),
+    Basic(IVec2),
+    Player(IVec2),
+    Enemies(i32, IVec2),
     Default,
 }
 impl Generator for TileSet {
@@ -94,8 +99,18 @@ impl Generator for TileSet {
         grid: &Res<grid::Grid>,
     ) {
         match self {
-            TileSet::Basic(count) => {
-                generator::spawn_boxes(IVec2::new(20, 20), grid, commands, resources)
+            TileSet::Basic(size) => {
+                generator::spawn_boxes(size.to_owned(), grid, commands, resources);
+            }
+            TileSet::Player(location) => {
+                generator::spawn_player(
+                    grid.world_position_on_top_from_grid_position(&location),
+                    commands,
+                    resources,
+                );
+            }
+            TileSet::Enemies(count, size) => {
+                generator::spawn_enemies(count, size, grid, commands, resources);
             }
             TileSet::Default => return,
         }

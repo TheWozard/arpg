@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub const ROWS: isize = 11;
 pub const COLUMNS: isize = 11;
 pub const SCALE: Vec3 = Vec2::splat(2.0).extend(0.);
-pub const SIZE: Vec2 = Vec2::new(30., 32.);
+pub const SIZE: Vec2 = Vec2::new(32., 32.);
 pub const SPACING: Vec2 = Vec2::new(SCALE.x * SIZE.x, SCALE.y * SIZE.y);
 
 // Converts a zero indexed x,y coordinate to a index on the sheet
@@ -34,6 +34,10 @@ pub enum Index {
     ShrubB = sheet_index!(2, 8),
     ShrubC = sheet_index!(2, 9),
     ShrubD = sheet_index!(2, 10),
+
+    Water = sheet_index!(8, 6),
+    WaterWavy = sheet_index!(8, 7),
+    WaterWavyLight = sheet_index!(8, 8),
 }
 
 pub struct IsometricSheet {
@@ -51,7 +55,7 @@ impl IsometricSheet {
             SIZE,
             COLUMNS as usize,
             ROWS as usize,
-            Some(Vec2::splat(2.0)),
+            None,
             None,
         );
 

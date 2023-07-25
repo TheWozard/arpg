@@ -1,4 +1,5 @@
 //! A basic APRG game
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::{app::AppExit, prelude::*, window};
 use bevy_embedded_assets::EmbeddedAssetPlugin;
 
@@ -36,6 +37,8 @@ fn main() {
         )
         .add_state::<AppState>()
         .add_plugins((
+            // LogDiagnosticsPlugin::default(),
+            // FrameTimeDiagnosticsPlugin::default(),
             resources::ResourcePlugin,
             ui::UiPlugin,
             camera::CameraPlugin,
