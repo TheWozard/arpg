@@ -7,6 +7,8 @@ use bevy::prelude::*;
 use noise::NoiseFn;
 use rand::prelude::*;
 
+use super::stats;
+
 pub fn spawn_boxes(
     size: IVec2,
     grid: &grid::Grid,
@@ -95,35 +97,38 @@ pub fn spawn_tile(
     commands.add_child(entity);
 }
 
-pub fn spawn_player(translation: Vec3, commands: &mut Commands, resources: &Res<Resources>) {
-    commands.spawn((
-        SpriteSheetBundle {
-            texture_atlas: resources.ascii.atlas.clone(),
-            sprite: TextureAtlasSprite {
-                index: ascii::AsciiIndex::P as usize,
-                color: palette::game::PLAYER,
-                ..default()
-            },
-            transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(translation),
-            ..default()
-        },
-        Name::new(format!("Player")),
-        cleanup::CleanupHint,
-    ));
-}
-
-pub fn spawn_enemies(
-    count: &i32,
-    size: &IVec2,
-    grid: &grid::Grid,
+pub fn spawn_player(
+    translation: Vec3,
     commands: &mut Commands,
     resources: &Res<Resources>,
-) {
-    let mut rng = rand::thread_rng();
-    for i in 0..count.to_owned() {
-        let x = rng.gen_range(0..size.x);
-        let y = rng.gen_range(0..size.y);
-        commands.spawn((
+) -> Entity {
+    commands
+        .spawn((
+            SpriteSheetBundle {
+                texture_atlas: resources.ascii.atlas.clone(),
+                sprite: TextureAtlasSprite {
+                    index: ascii::AsciiIndex::P as usize,
+                    color: palette::game::PLAYER,
+                    ..default()
+                },
+                transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(translation),
+                ..default()
+            },
+            Name::new(format!("Player")),
+            stats::Life(100),
+            stats::Damage(10),
+            cleanup::CleanupHint,
+        ))
+        .id()
+}
+
+pub fn spawn_enemy(
+    translation: Vec3,
+    commands: &mut Commands,
+    resources: &Res<Resources>,
+) -> Entity {
+    commands
+        .spawn((
             SpriteSheetBundle {
                 texture_atlas: resources.ascii.atlas.clone(),
                 sprite: TextureAtlasSprite {
@@ -131,13 +136,27 @@ pub fn spawn_enemies(
                     color: palette::game::ENEMY,
                     ..default()
                 },
-                transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(
-                    grid.world_position_on_top_from_grid_position(&IVec2::new(x, y)),
-                ),
+                transform: Transform::from_scale(ascii::ASCII_SCALE).with_translation(translation),
                 ..default()
             },
-            Name::new(format!("Enemy {i}")),
+            Name::new(format!("Enemy")),
+            stats::Life(50),
+            stats::Damage(5),
             cleanup::CleanupHint,
-        ));
+        ))
+        .id()
+}
+
+pub fn spawn_multiple(
+    count: &i32,
+    size: &IVec2,
+    commands: &mut Commands,
+    spawn: impl Fn(IVec2, &mut Commands),
+) {
+    let mut rng = rand::thread_rng();
+    for i in 0..count.to_owned() {
+        let x = rng.gen_range(0..size.x);
+        let y = rng.gen_range(0..size.y);
+        spawn(IVec2::new(x, y), commands);
     }
 }

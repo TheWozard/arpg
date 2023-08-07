@@ -2,12 +2,10 @@ use crate::camera::WorldCursor;
 use crate::resources::isometric;
 use crate::StateBasedPlugin;
 use bevy::prelude::*;
-use bevy::utils::HashSet;
 use bevy_inspector_egui::prelude::*;
 
 use self::selection::GridSelection;
 
-pub mod dragndrop;
 pub mod generator;
 pub mod selection;
 
@@ -17,7 +15,6 @@ impl<S: States> Plugin for GridPlugin<S> {
         // Debug mounting.
         app.register_type::<GridCursor>();
         app.register_type::<GridCursorFollowHint>();
-        app.register_type::<GridTracked>();
         app.register_type::<selection::GridSelection>();
 
         app.insert_resource(Grid::new(IVec2::new(10, 10), isometric::SPACING));
@@ -25,17 +22,16 @@ impl<S: States> Plugin for GridPlugin<S> {
         app.insert_resource(GridSelection::default());
         app.add_systems(
             Update,
-            (
-                GridCursor::track,
-                (GridTracked::track, GridCursorFollowHint::track),
-            )
+            (GridCursor::track, GridCursorFollowHint::track)
                 .chain()
                 .run_if(in_state(self.state())),
         );
         app.add_systems(
             Update,
-            selection::select_tile.run_if(in_state(self.state())),
+            selection::core_action.run_if(in_state(self.state())),
         );
+
+        app.add_plugins(selection::SelectionPlugin);
     }
 }
 
@@ -74,45 +70,17 @@ impl GridCursorFollowHint {
     }
 }
 
-/// GridTracked forces a Transform to align with the grid.
-#[derive(Component, Reflect, Default, InspectorOptions)]
-#[reflect(Component, InspectorOptions)]
-pub struct GridTracked {
-    pub position: IVec2,
-}
-impl GridTracked {
-    /// System responsible for updating GridTracked components and moving Transform translations
-    fn track(
-        mut grid: ResMut<Grid>,
-        mut entities: Query<(&mut Transform, &mut GridTracked, Entity), Changed<Transform>>,
-    ) {
-        for (mut transform, mut tracker, entity) in &mut entities {
-            let pos = grid.grid_position_from_translation(transform.translation);
-            // Snap
-            transform.translation = grid.world_position_from_grid_position(&pos);
-
-            // Grid Update
-            if pos != tracker.position {
-                grid.move_entity(&tracker.position, &pos, entity);
-                tracker.position = pos;
-            }
-        }
-    }
-}
-
 /// Tile holds data relevant to a single tile on the grid.
 /// Clone functions are implemented for easily initializing grids, this value should only
 /// ever be borrowed outside of the grid.
 #[derive(Clone)]
 pub struct Tile {
-    items: HashSet<Entity>,
+    pub entity: Option<Entity>,
 }
 
 impl Default for Tile {
     fn default() -> Self {
-        Tile {
-            items: HashSet::new(),
-        }
+        Tile { entity: None }
     }
 }
 
@@ -171,17 +139,20 @@ impl Grid {
 
     pub fn world_position_on_top_from_grid_position(&self, position: &IVec2) -> Vec3 {
         self.world_position_from_grid_position(position)
-            + Vec3::new(0., (self.scale.y * 2.) - 2., 0.)
+            + Vec3::new(0., (self.scale.y * 2.) - 2., 2.)
     }
 
     /// Adds a lightweight entity handle to a given grid position. Returns true if the tile exists.
     pub fn add_entity(&mut self, position: &IVec2, entity: Entity) -> bool {
         let position = self.get_index_of(position);
         match self.tiles.get_mut(position) {
-            Some(s) => {
-                s.items.insert(entity);
-                true
-            }
+            Some(s) => match s.entity {
+                Some(_) => false,
+                None => {
+                    s.entity = Some(entity);
+                    true
+                }
+            },
             None => false,
         }
     }
@@ -190,8 +161,27 @@ impl Grid {
     pub fn remove_entity(&mut self, position: &IVec2, entity: &Entity) -> bool {
         let position = self.get_index_of(position);
         match self.tiles.get_mut(position) {
-            Some(s) => s.items.remove(entity),
+            Some(s) => match s.entity {
+                Some(t) => {
+                    if entity.eq(&t) {
+                        s.entity = None;
+                        true
+                    } else {
+                        false
+                    }
+                }
+                None => false,
+            },
             None => false,
+        }
+    }
+
+    // Returns option for if a given tile contains an entity.
+    pub fn get_entity(&self, position: &IVec2) -> Option<Entity> {
+        let position = self.get_index_of(position);
+        match self.tiles.get(position) {
+            Some(s) => s.entity,
+            None => None,
         }
     }
 
@@ -200,9 +190,10 @@ impl Grid {
         if old == new {
             return false;
         }
-        if self.remove_entity(old, &entity) {
+        if self.get_entity(new).is_none() && self.remove_entity(old, &entity) {
             return self.add_entity(new, entity);
         }
+
         false
     }
 

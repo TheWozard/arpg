@@ -1,18 +1,19 @@
-use self::grid::dragndrop;
 use crate::resources;
 use crate::AppState;
 use bevy::prelude::*;
+use std::sync::{Arc, Mutex};
 
 mod cleanup;
 mod generator;
 pub mod grid;
 mod pools;
+mod stats;
 
 crate::StateBasedPlugin!(MapPlugin);
 impl<S: States> Plugin for MapPlugin<S> {
     fn build(&self, app: &mut App) {
         app.insert_resource(Map::default());
-        app.add_plugins((grid::GridPlugin::new(AppState::Game), dragndrop::DragNDrop));
+        app.add_plugins((grid::GridPlugin::new(AppState::Game), stats::StatsPlugin));
         app.add_systems(OnEnter(self.state()), Map::generate);
         app.add_systems(Update, return_to_town.run_if(in_state(self.state())));
         app.add_systems(OnExit(self.state()), cleanup::CleanupHint::cleanup);
@@ -36,7 +37,7 @@ impl Default for Map {
             generator: SequentialGeneration::new(vec![
                 Box::new(TileSet::Basic(IVec2::new(10, 10))),
                 Box::new(TileSet::Player(IVec2::new(4, 4))),
-                Box::new(TileSet::Enemies(3, IVec2::new(10, 10))),
+                Box::new(TileSet::Enemies(5, IVec2::new(10, 10))),
                 Box::new(grid::generator::Cursor),
             ]),
         }
@@ -48,9 +49,10 @@ impl Map {
         mut commands: Commands,
         resources: Res<resources::Resources>,
         map: Res<Map>,
-        grid: Res<grid::Grid>,
+        mut grid: ResMut<grid::Grid>,
     ) {
-        map.generator.generate(&mut commands, &resources, &grid)
+        grid.clear();
+        map.generator.generate(&mut commands, &resources, &mut grid);
     }
 }
 
@@ -59,7 +61,7 @@ pub trait Generator {
         &self,
         commands: &mut Commands,
         resources: &Res<resources::Resources>,
-        grid: &Res<grid::Grid>,
+        grid: &mut ResMut<grid::Grid>,
     );
 }
 
@@ -76,7 +78,7 @@ impl Generator for SequentialGeneration {
         &self,
         commands: &mut Commands,
         resources: &Res<resources::Resources>,
-        grid: &Res<grid::Grid>,
+        grid: &mut ResMut<grid::Grid>,
     ) {
         for generator in self.0.iter() {
             generator.generate(commands, resources, grid)
@@ -96,21 +98,37 @@ impl Generator for TileSet {
         &self,
         commands: &mut Commands,
         resources: &Res<resources::Resources>,
-        grid: &Res<grid::Grid>,
+        grid: &mut ResMut<grid::Grid>,
     ) {
         match self {
             TileSet::Basic(size) => {
                 generator::spawn_boxes(size.to_owned(), grid, commands, resources);
             }
             TileSet::Player(location) => {
-                generator::spawn_player(
+                let entity = generator::spawn_player(
                     grid.world_position_on_top_from_grid_position(&location),
                     commands,
                     resources,
                 );
+                if !grid.add_entity(location, entity) {
+                    if let Some(entity) = commands.get_entity(entity) {
+                        entity.despawn_recursive()
+                    }
+                }
             }
             TileSet::Enemies(count, size) => {
-                generator::spawn_enemies(count, size, grid, commands, resources);
+                let grid_mutex = Arc::new(Mutex::new(grid));
+                generator::spawn_multiple(count, size, commands, |position, commands| {
+                    if let Ok(mut g) = grid_mutex.lock() {
+                        if g.get_entity(&position).is_none() {
+                            let translation = g.world_position_on_top_from_grid_position(&position);
+                            g.add_entity(
+                                &position,
+                                generator::spawn_enemy(translation, commands, resources),
+                            );
+                        }
+                    }
+                });
             }
             TileSet::Default => return,
         }
